@@ -14,3 +14,4 @@ router.post("/follow/:id", protectRoute, followUnfollowUser);
 router.post("/update", protectRoute, updateUserProfile);
 
 export default router;
+ 

@@ -4,9 +4,12 @@ dotenv.config({ path: "Backend/.env" }); //Relative Path to Backend/.env
 
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
+import postRoutes from "./routes/postRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+
 import connectMongoDB from "./server/DB.js";
 import cookieParser from "cookie-parser";
-import userRoutes from "./routes/userRoutes.js";
 import { v2 as cloudinary } from "cloudinary";
 // Debugging
 // console.log("Loaded MONGO_URI:", process.env.MONGO_URI);
@@ -23,6 +26,8 @@ app.use(cookieParser());
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/posts", postRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 //Serving Running Get request on Home Page
 app.get("/", (req, res) => {

@@ -32,7 +32,7 @@ export const signup = async (req, res) => {
     //Hashing and Storing Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    password = "";
+
     const newUser = new User({
       fullname,
       username,
