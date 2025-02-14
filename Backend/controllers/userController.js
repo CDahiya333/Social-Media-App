@@ -71,7 +71,6 @@ export const followUnfollowUser = async (req, res) => {
       await User.findByIdAndUpdate(currentUser._id, {
         $pull: { following: id },
       });
-      // TODO: return the id of the user as a reponse
       res.status(200).json({ message: "User Unfollowed Successfully" });
     } else {
       //Follow Button
@@ -89,8 +88,6 @@ export const followUnfollowUser = async (req, res) => {
       });
 
       await newNotification.save();
-
-      // TODO: return the id of the user as a reponse
       res.status(200).json({ message: "User Followed Successfully" });
     }
   } catch (error) {
@@ -102,6 +99,7 @@ export const followUnfollowUser = async (req, res) => {
 export const updateUserProfile = async (req, res) => {
   const { fullname, email, username, currentPassword, newPassword, bio, link } =
     req.body;
+  console.log(req.body);
   let { profileImg, coverImg } = req.body;
   const userId = req.user._id;
 
@@ -166,7 +164,7 @@ export const updateUserProfile = async (req, res) => {
 
     return res.status(200).json(user);
   } catch (error) {
-    console.log("Error in updateUserProfile Controller:", error.message);
+    console.log("Error in updateUserProfile Controller:", error);
     return res.status(500).json({ error: "Internal Server Erorr" });
   }
 };

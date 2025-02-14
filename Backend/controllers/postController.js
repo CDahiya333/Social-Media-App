@@ -5,38 +5,55 @@ import Notification from "../models/notification.js";
 
 export const createPost = async (req, res) => {
   try {
-    const { text } = req.body;
-    let { img } = req.body;
+    const text = req.body.text;
+    let img = null;
     const userId = req.user._id.toString();
 
     const user = await User.findById(userId).select("-password");
     if (!user) {
       return res.status(404).json({ error: "User Not Found" });
     }
-    if (!text && !img) {
-      return res.status(400).json({ error: "Post must have text or img" });
+    if (!text && !req.file) {
+      return res.status(400).json({ error: "Post must have text or an image" });
     }
-    if (img) {
-      const uploadedImg = await cloudinary.uploader.upload(img);
-      img = uploadedImg.secure_url;
+
+    if (req.file) {
+      const uploadedImg = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { resource_type: "image" },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              reject(error);
+            } else {
+              resolve(result.secure_url);
+            }
+          }
+        );
+        uploadStream.end(req.file.buffer);
+      });
+
+      img = uploadedImg;
     }
+
     const newPost = new Post({
       user: userId,
       text,
       img,
     });
     await newPost.save();
+
     return res.status(201).json(newPost);
   } catch (error) {
-    console.log("Error in createPost Controller:", error.message);
+    console.error("Error in createPost Controller:", error.message);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const commentOnPost = async (req, res) => {
   try {
-    const { text } = req.body;
-    const postId = req.parms.id;
+    console.log("Received request body:", req.body);
+    const text = req.body.text;
+    const postId = req.params.id;
     const userId = req.user._id;
     if (!text) {
       return res.status(400).json({ error: "Text Field Empty" });
@@ -56,7 +73,6 @@ export const commentOnPost = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const likeUnlikePost = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -84,12 +100,16 @@ export const likeUnlikePost = async (req, res) => {
       // Dislikes the post
       await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
       await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
+      // Like Count excluding the authUser
+      const updatedLikes = post.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
     }
     return res.status(200).json({
       message: userLikedPost
         ? "Post Disliked Successfully"
         : "Post Liked Successfully",
-      likes: post.likes.length, // Return updated like count
+      post, // Return Entire post
     });
   } catch (error) {
     console.log("Error in likeUnlikePost Controller:", error.message);
@@ -118,7 +138,6 @@ export const deletePost = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const getAllPosts = async (req, res) => {
   try {
     const posts = await Post.find()
@@ -140,7 +159,6 @@ export const getAllPosts = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
 export const getLikedPosts = async (req, res) => {
   const userId = req.params.id;
   try {
