@@ -5,7 +5,7 @@ import LoginPage from "./pages/auth/login/LoginPage";
 import SignUpPage from "./pages/auth/signup/SignUpPage";
 import NotificationPage from "./pages/notification/NotificationPage";
 import ProfilePage from "./pages/profile/ProfilePage";
-import API_BASE_URL from "./config.js";
+// import API_BASE_URL from "./config.js";
 
 import Sidebar from "./components/common/Sidebar";
 import RightPanel from "./components/common/RightPanel";
@@ -20,9 +20,7 @@ function App() {
     queryKey: ["authUser"],
     queryFn: async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
-          credentials: "include", // Ensure cookies (if using auth)
-        });
+        const res = await fetch("/api/auth/me", { credentials: "include" });
         const data = await res.json();
         if (data.error) return null;
         if (!res.ok) {
